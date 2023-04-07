@@ -1,5 +1,6 @@
 import 'package:contacts/constants/style/custom_color.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -39,7 +40,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             backgroundColor: const Color(0xff30447c),
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-            onPressed: () {},
+            onPressed: () {
+              context.go('/addContact');
+            },
             child: const Icon(Icons.add),
           ),
         ),

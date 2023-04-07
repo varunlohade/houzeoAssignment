@@ -3,9 +3,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../../models/contact_model.dart';
+import 'dart:io' as io;
 
 class LocalDB {
   final Future<SharedPreferences> _pref = SharedPreferences.getInstance();
+  static Database? _db;
+
 
   setupDb() async {
     var pref = await _pref;
@@ -73,4 +76,6 @@ class LocalDB {
     final db = await database;
     await db.delete('contact', where: 'id = ?', whereArgs: [id]);
   }
+  
+  getApplicationDocumentsDirectory() {}
 }
