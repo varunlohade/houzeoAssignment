@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../../service/localDb/providers_local.dart';
+import 'dart:math';
+
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -10,9 +13,18 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<ConsumerStatefulWidget> createState() => _HomeScreenState();
 }
 
+const randomColor = [
+  Colors.redAccent,
+  Colors.blueAccent,
+  Colors.purpleAccent,
+  Colors.yellowAccent
+];
+
 class _HomeScreenState extends ConsumerState<HomeScreen> {
+  var rng = Random();
   @override
   Widget build(BuildContext context) {
+    final allContact = ref.watch(getcontactsProvider);
     return SafeArea(
       child: Scaffold(
         bottomNavigationBar: SizedBox(
@@ -22,7 +34,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               iconSize: 26,
               selectedItemColor: Colors.white,
               unselectedItemColor: const Color.fromARGB(255, 172, 165, 165),
-              backgroundColor: const Color(0xff3F4659),
+              backgroundColor: const Color.fromARGB(255, 35, 39, 49),
               items: const [
                 BottomNavigationBarItem(
                     label: 'contacts', icon: Icon(Icons.person)),
@@ -41,7 +53,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
             onPressed: () {
-              context.go('/addContact');
+              context.push('/addContact');
             },
             child: const Icon(Icons.add),
           ),
@@ -57,7 +69,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 width: double.infinity,
                 decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(30),
-                    color: const Color(0xff3F4659)),
+                    color: const Color.fromARGB(255, 35, 39, 49)),
                 child: const TextField(
                   decoration: InputDecoration(
                     suffixIcon: Icon(
@@ -182,7 +194,115 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                 ],
               ),
-            )
+            ),
+            const SizedBox(
+              height: 20,
+            ),
+            allContact.when(
+                data: (data) {
+                  if (data == null || data.isEmpty) {
+                    return const Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Text(
+                        "Add contacts ",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    );
+                  }
+                  return Expanded(
+                      child: ListView.builder(
+                          itemCount: data.length,
+                          itemBuilder: (context, index) {
+                            int randomint = rng.nextInt(4);
+                            return ListTile(
+                              onTap: () {
+                                context.push('/detailScreen');
+                              },
+                              onLongPress: () {
+                                showDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      return Dialog(
+                                        backgroundColor: const Color.fromARGB(
+                                            255, 35, 39, 49),
+                                        child: SizedBox(
+                                          height: 150,
+                                          width: 100,
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  "Do you want to delete ${data[index].contactName} from your contact?",
+                                                  style: const TextStyle(
+                                                      fontSize: 16,
+                                                      color: Colors.white),
+                                                ),
+                                                const Spacer(),
+                                                Row(
+                                                  children: [
+                                                    TextButton(
+                                                      onPressed: () {
+                                                        Navigator.pop(context);
+                                                      },
+                                                      child:
+                                                          const Text('Close'),
+                                                    ),
+                                                    TextButton(
+                                                      onPressed: () {
+                                                        ref.watch(
+                                                            deleteProvider(data[
+                                                                        index]
+                                                                    .contactName +
+                                                                data[index]
+                                                                    .phoneNumber
+                                                                    .toString()));
+                                                        ref.invalidate(
+                                                            getcontactsProvider);
+                                                        context.pop();
+                                                      },
+                                                      child:
+                                                          const Text('Delete'),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    });
+                              },
+                              trailing: const Icon(
+                                Icons.navigate_next_rounded,
+                                color: Colors.white,
+                              ),
+                              leading: Text(
+                                data[index]
+                                    .contactName
+                                    .substring(0, 1)
+                                    .toUpperCase(),
+                                style: TextStyle(
+                                    color: randomColor[randomint],
+                                    fontSize: 30),
+                              ),
+                              title: Text(
+                                data[index].contactName,
+                                style: const TextStyle(
+                                    color: Colors.white, fontSize: 20),
+                              ),
+                            );
+                          }));
+                },
+                error: (error, st) {
+                  return const Text("Error fetching data Please Restart App");
+                },
+                loading: () => const CircularProgressIndicator(
+                      color: Colors.white,
+                    ))
           ],
         ),
       ),

@@ -9,7 +9,6 @@ class LocalDB {
   final Future<SharedPreferences> _pref = SharedPreferences.getInstance();
   static Database? _db;
 
-
   setupDb() async {
     var pref = await _pref;
     pref.setBool("boarding", true);
@@ -17,7 +16,7 @@ class LocalDB {
       join(await getDatabasesPath(), 'contact_database.db'),
       onCreate: (db, version) {
         return db.execute(
-          'CREATE CONTACTS contact(id INTEGER PRIMARY KEY, name TEXT,sirname TEXT,companyname TEXT, phonenumber INTEGER, email TEXT)',
+          'CREATE TABLE contact(id String PRIMARY KEY, name TEXT,sirname TEXT,companyname TEXT, phonenumber INTEGER, email TEXT)',
         );
       },
       version: 1,
@@ -38,7 +37,7 @@ class LocalDB {
     );
   }
 
-  Future<List<Contact>> getallContact() async {
+  Future<List<Contact>?> getallContact() async {
     final database =
         openDatabase(join(await getDatabasesPath(), 'contact_database.db'));
 
@@ -68,7 +67,7 @@ class LocalDB {
         where: 'id = ?', whereArgs: [contact.id]);
   }
 
-  Future<void> deleteContact(int id) async {
+  Future<void> deleteContact(String id) async {
     final database =
         openDatabase(join(await getDatabasesPath(), 'contact_database.db'));
 
@@ -76,6 +75,6 @@ class LocalDB {
     final db = await database;
     await db.delete('contact', where: 'id = ?', whereArgs: [id]);
   }
-  
+
   getApplicationDocumentsDirectory() {}
 }
