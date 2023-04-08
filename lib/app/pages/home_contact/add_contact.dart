@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:contacts/models/contact_model.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -7,7 +9,8 @@ import '../../../constants/style/custom_color.dart';
 import '../../../service/localDb/providers_local.dart';
 
 class AddContact extends ConsumerStatefulWidget {
-  const AddContact({super.key});
+  final Contact? contact;
+  const AddContact({super.key, required this.contact});
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _AddContactState();
@@ -15,12 +18,29 @@ class AddContact extends ConsumerStatefulWidget {
 
 class _AddContactState extends ConsumerState<AddContact> {
   final _formKey = GlobalKey<FormState>();
+  Contact? editcontacts;
+  var rng = Random();
+  TextEditingController _name = TextEditingController();
+  TextEditingController _sirname = TextEditingController();
+  TextEditingController _companyname = TextEditingController();
+  TextEditingController _phoneNumber = TextEditingController();
+  TextEditingController _emailAddress = TextEditingController();
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    editcontacts = widget.contact;
+    _name.text = widget.contact != null ? widget.contact!.contactName : "";
+    _sirname.text =
+        widget.contact != null ? widget.contact!.contactSirName : "";
+    _companyname.text =
+        widget.contact != null ? widget.contact!.contactName : "";
+    _phoneNumber.text =
+        widget.contact != null ? widget.contact!.phoneNumber : "";
+    _emailAddress.text =
+        widget.contact != null ? widget.contact!.emailAddress : "";
+  }
 
-  final TextEditingController _name = TextEditingController();
-  final TextEditingController _sirname = TextEditingController();
-  final TextEditingController _companyname = TextEditingController();
-  final TextEditingController _phoneNumber = TextEditingController();
-  final TextEditingController _emailAddress = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -32,25 +52,38 @@ class _AddContactState extends ConsumerState<AddContact> {
               padding: const EdgeInsets.all(8.0),
               child: GestureDetector(
                 onTap: () {
-                  if (_formKey.currentState!.validate()) {
-                    //function call to add contact
+                  if (widget.contact == null) {
+                    if (_formKey.currentState!.validate()) {
+                      var id = rng.nextInt(6);
+                      ref.watch(addContactProvider(Contact(
+                          id: id,
+                          contactName: _name.text,
+                          contactSirName: _sirname.text,
+                          companyName: _companyname.text,
+                          phoneNumber: _phoneNumber.text,
+                          emailAddress: _emailAddress.text)));
 
-                    ref.watch(addContactProvider(Contact(
-                        id: _name.text + _phoneNumber.text,
+                      ref.invalidate(getcontactsProvider);
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Contact added')));
+                      context.pop();
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                          content: Text('Please Add all the details')));
+                    }
+                  } else {
+                    ref.watch(updateContactProvider(Contact(
+                        id: widget.contact!.id,
                         contactName: _name.text,
                         contactSirName: _sirname.text,
                         companyName: _companyname.text,
-                        phoneNumber: int.parse(_phoneNumber.text),
+                        phoneNumber: _phoneNumber.text,
                         emailAddress: _emailAddress.text)));
-
                     ref.invalidate(getcontactsProvider);
-
                     ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Contact added')));
+                        const SnackBar(content: Text('Contact Edited')));
                     context.pop();
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                        content: Text('Please Add all the details')));
                   }
                 },
                 child: Container(
@@ -79,7 +112,9 @@ class _AddContactState extends ConsumerState<AddContact> {
           ),
           backgroundColor: Colors.transparent,
           elevation: 0,
-          title: const Text("Create contact"),
+          title: widget.contact != null
+              ? const Text("Edit contact")
+              : const Text("Create contact"),
           titleTextStyle: const TextStyle(
               color: Colors.white, fontSize: 20, fontWeight: FontWeight.w400),
         ),

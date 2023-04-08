@@ -1,9 +1,9 @@
 class Contact {
-  final String id;
+  final int id;
   final String contactName;
   final String contactSirName;
   final String companyName;
-  final int phoneNumber;
+  final String phoneNumber;
   final String emailAddress;
   Contact({
     required this.id,

@@ -11,6 +11,10 @@ final addContactProvider =
 });
 
 final deleteProvider =
-    FutureProvider.autoDispose.family<dynamic, String>((ref, id) {
+    FutureProvider.autoDispose.family<dynamic, int>((ref, id) {
   return LocalDB().deleteContact(id);
+});
+final updateContactProvider =
+    FutureProvider.autoDispose.family<dynamic, Contact>((ref, contact) {
+  return LocalDB().updateContact(contact);
 });

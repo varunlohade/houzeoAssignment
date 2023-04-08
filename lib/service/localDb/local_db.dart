@@ -16,7 +16,7 @@ class LocalDB {
       join(await getDatabasesPath(), 'contact_database.db'),
       onCreate: (db, version) {
         return db.execute(
-          'CREATE TABLE contact(id String PRIMARY KEY, name TEXT,sirname TEXT,companyname TEXT, phonenumber INTEGER, email TEXT)',
+          'CREATE TABLE contact(id String PRIMARY KEY, name TEXT,sirname TEXT,companyname TEXT, phonenumber TEXT, email TEXT)',
         );
       },
       version: 1,
@@ -67,7 +67,7 @@ class LocalDB {
         where: 'id = ?', whereArgs: [contact.id]);
   }
 
-  Future<void> deleteContact(String id) async {
+  Future<void> deleteContact(int id) async {
     final database =
         openDatabase(join(await getDatabasesPath(), 'contact_database.db'));
 

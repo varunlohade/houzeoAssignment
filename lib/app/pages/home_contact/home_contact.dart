@@ -1,29 +1,28 @@
 import 'package:contacts/constants/style/custom_color.dart';
+import 'package:contacts/service/service.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 
+import '../../../models/contact_model.dart';
 import '../../../service/localDb/providers_local.dart';
 import 'dart:math';
 
-class HomeScreen extends ConsumerStatefulWidget {
-  const HomeScreen({super.key});
+// class HomeScreen extends ConsumerStatefulWidget {
+//   const HomeScreen({super.key});
 
-  @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _HomeScreenState();
-}
+//   @override
+//   ConsumerState<ConsumerStatefulWidget> createState() => _HomeScreenState();
+// }
 
-const randomColor = [
-  Colors.redAccent,
-  Colors.blueAccent,
-  Colors.purpleAccent,
-  Colors.yellowAccent
-];
-
-class _HomeScreenState extends ConsumerState<HomeScreen> {
+class HomeScreen extends HookConsumerWidget {
   var rng = Random();
+  TextEditingController _search = TextEditingController();
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final _searchList = useState<List<Contact>>([]);
+
     final allContact = ref.watch(getcontactsProvider);
     return SafeArea(
       child: Scaffold(
@@ -70,8 +69,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(30),
                     color: const Color.fromARGB(255, 35, 39, 49)),
-                child: const TextField(
-                  decoration: InputDecoration(
+                child: TextField(
+                  onChanged: (val) {},
+                  controller: _search,
+                  decoration: const InputDecoration(
                     suffixIcon: Icon(
                       Icons.more_vert_rounded,
                       color: Color.fromARGB(255, 211, 203, 203),
@@ -216,78 +217,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             int randomint = rng.nextInt(4);
                             return ListTile(
                               onTap: () {
-                                context.push('/detailScreen');
+                                context.push('/detailContact',
+                                    extra: data[index]);
                               },
                               onLongPress: () {
-                                showDialog(
-                                    context: context,
-                                    builder: (context) {
-                                      return Dialog(
-                                        backgroundColor: const Color.fromARGB(
-                                            255, 35, 39, 49),
-                                        child: SizedBox(
-                                          height: 150,
-                                          width: 100,
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  "Do you want to delete ${data[index].contactName} from your contact?",
-                                                  style: const TextStyle(
-                                                      fontSize: 16,
-                                                      color: Colors.white),
-                                                ),
-                                                const Spacer(),
-                                                Row(
-                                                  children: [
-                                                    TextButton(
-                                                      onPressed: () {
-                                                        Navigator.pop(context);
-                                                      },
-                                                      child:
-                                                          const Text('Close'),
-                                                    ),
-                                                    TextButton(
-                                                      onPressed: () {
-                                                        ref.watch(
-                                                            deleteProvider(data[
-                                                                        index]
-                                                                    .contactName +
-                                                                data[index]
-                                                                    .phoneNumber
-                                                                    .toString()));
-                                                        ref.invalidate(
-                                                            getcontactsProvider);
-                                                        context.pop();
-                                                      },
-                                                      child:
-                                                          const Text('Delete'),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    });
+                                Service()
+                                    .makingPhoneCall(data[index].phoneNumber);
                               },
                               trailing: const Icon(
                                 Icons.navigate_next_rounded,
                                 color: Colors.white,
                               ),
-                              leading: Text(
-                                data[index]
-                                    .contactName
-                                    .substring(0, 1)
-                                    .toUpperCase(),
-                                style: TextStyle(
-                                    color: randomColor[randomint],
-                                    fontSize: 30),
+                              contentPadding: const EdgeInsets.all(10),
+                              leading: CircleAvatar(
+                                backgroundColor:
+                                    CustomColor().randomColor[randomint],
+                                radius: 25,
+                                child: Text(
+                                  data[index]
+                                      .contactName
+                                      .substring(0, 1)
+                                      .toUpperCase(),
+                                  style: const TextStyle(
+                                      color: Colors.black, fontSize: 30),
+                                ),
                               ),
                               title: Text(
                                 data[index].contactName,
